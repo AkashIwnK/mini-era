@@ -9,6 +9,11 @@ Mini-ERA-HPVM Requirements:
 - HPVM (internal repository branch `hpvm-epochs0` located [here](https://gitlab.engr.illinois.edu/llvm/hpvm/-/tree/hpvm-epochs0))
     * Refer to [HPVM README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/hpvm-epochs0/README.md) for set up instructions.
     *Note: During installation, make sure target is set to X86;RISCV*
+    * After installation, create the `Makefile.config` file under `/hpvm/test/becnhmarks/include` by copying `Makefile.config.example` and
+    modifying it to set all the correct paths accordingly. *Make sure the path for `RISCV_BIN_DIR` is set to point to the cross-compiler tool
+    chain (see GCC cross compiler below).*
+- ApproxHPVM (internal repository branch `approx_hpvm_nvdla` located [here](https://gitlab.engr.illinois.edu/llvm/hpvm/-/tree/approx_hpvm_nvdla).
+    * Refer to [ApproxHPVM README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/approx_hpvm_nvdla/README.md) for set up instructions.
 - GCC cross compiler for riscv, can be installed using ESP as follows:
     * Clone ESP repository using: `git clone --recursive https://github.com/sld-columbia/esp.git`
     * Checkout the epochs branch: `cd esp && git checkout epochs`
@@ -29,9 +34,9 @@ git checkout hpvm
 To build the HPVM version of Mini-ERA: 
 
 1. Set up the path to HPVM: `export HPVM_DIR=$(PATH_TO_HPVM_REPO)/hpvm` (*This can also be added to bashrc*)
-2. Setup up path to AppoxHPVM directory (`approxhpvm_nvdla` branch) with `export APPROXHPVM_DIR=$(PATH_TO_APPROXHPVM_REPO)/`
-3. Set up necessary paths by sourcing the setup script using `source ./set_nvdla_paths.sh`
-4. Include path to LLVM-9 binaries in `$PATH`
+2. Set up path to AppoxHPVM: `export APPROXHPVM_DIR=$(PATH_TO_APPROXHPVM_REPO)/`
+3. Set up necessary paths by sourcing the setup script using `source ./set_paths.sh`
+    - *Note: The scripts assumes the two environment variables are set and updates the PATH environment variable to point to the HPVM binaries.*
 5. Build for desired target:
     * For native architecture: `make`
     * For epochs0 (risc-v host with fft, viterbi and NVLDA accelerators): `make epochs`
