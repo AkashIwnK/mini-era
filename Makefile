@@ -8,8 +8,14 @@ ifeq ($(HPVM_DIR),)
     $(error HPVM_DIR must be set!)
 endif
 
+ifeq ($(TARGET),)
+        TARGET = seq
+endif
+
+ifeq ($(TARGET),epochs)
 ifeq ($(APPROXHPVM_DIR),)
     $(error APPROXHPVM_DIR must be set!)
+endif
 endif
 
 ifeq ($(MINIERA_DIR),)
@@ -29,10 +35,6 @@ CUR_DIR = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
 LFLAGS += -lm -lrt
 
-ifeq ($(TARGET),)
-	TARGET = seq
-endif
-
 # Build dirs
 SRC_DIR = src/
 ESP_NVDLA_DIR = esp_hardware/nvdla
@@ -40,7 +42,7 @@ BUILD_DIR = build/$(TARGET)
 
 INCLUDES +=  -I$(SRC_DIR) -I$(ESP_NVDLA_DIR) -I$(TOP)/core/include
 
-EXE = miniera-hpvm-$(TARGET)
+EXE = miniera-hpvm-seq
 RISCVEXE = miniera-hpvm-riscv
 EPOCHSEXE = miniera-hpvm-epochs
 
