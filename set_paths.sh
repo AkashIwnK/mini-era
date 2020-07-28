@@ -8,3 +8,4 @@ export LLVM_BUILD_ROOT=$APPROXHPVM_DIR/build
 export LIBRARY_PATH=/software/cuda-9.1/lib64/:$LIBRARY_PATH
 export LD_LIBRARY_PATH=$LLVM_SRC_ROOT/lib/Transforms/HPVM2NVDLA/nvdla:/software/cuda-9.1/lib64/:$LD_LIBRARY_PATH
 export PATH=$HPVM_DIR/build/bin:$PATH
+export TOP=$MINIERA_DIR/sw/umd
