@@ -10,7 +10,7 @@ Mini-ERA-HPVM Requirements:
     * Refer to [HPVM README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/hpvm-epochs0/README.md) for set up instructions.
     *Note: During installation, make sure target is set to X86;RISCV*
     * After installation, create the `Makefile.config` file under `/hpvm/test/becnhmarks/include` by copying `Makefile.config.example` and
-    modifying it to set all the correct paths accordingly. *Make sure the path for `RISCV_BIN_DIR` is set to point to the cross-compiler tool
+    modifying it to set all the correct paths accordingly as described [in this README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/hpvm-epochs0/hpvm/test/benchmarks/README.md). *Make sure the path for `RISCV_BIN_DIR` is set to point to the cross-compiler tool
     chain (see GCC cross compiler below).*
 - ApproxHPVM (internal repository branch `approx_hpvm_nvdla` located [here](https://gitlab.engr.illinois.edu/llvm/hpvm/-/tree/approx_hpvm_nvdla).
     * Refer to [ApproxHPVM README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/approx_hpvm_nvdla/README.md) for set up instructions.
