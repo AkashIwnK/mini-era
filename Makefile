@@ -12,12 +12,6 @@ ifeq ($(TARGET),)
         TARGET = seq
 endif
 
-
-
-ifeq ($(MINIERA_DIR),)
-    $(error MINIERA_DIR must be set!)
-endif
-
 CONFIG_FILE := $(HPVM_DIR)/test/benchmarks/include/Makefile.config
 
 ifeq ($(wildcard $(CONFIG_FILE)),)
@@ -100,7 +94,7 @@ ROOT := $(CUR_DIR)/sw/umd
 NVDLA_RUNTIME_DIR = $(CUR_DIR)/sw/umd/
 NVDLA_RUNTIME = $(CUR_DIR)/sw/umd/out
 
-TOOLCHAIN_PREFIX ?= riscv64-unknown-linux-gnu-
+TOOLCHAIN_PREFIX ?= $(RISCV_BIN_DIR)/riscv64-unknown-linux-gnu-
 
 ifeq ($(TOOLCHAIN_PREFIX),)
 $(error Toolchain prefix missing)
@@ -131,6 +125,9 @@ epochs: check-env $(NVDLA_MODULE) $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE)
 check-env:
 ifndef APPROXHPVM_DIR
 	$(error APPROXHPVM_DIR is undefined)
+endif
+ifndef MINIERA_DIR
+	$(error MINIERA_DIR is undefined)
 endif
 
 $(NVDLA_MODULE):
@@ -208,6 +205,7 @@ clean:
 	if [ -f "$(RISCVEXE)" ]; then rm $(RISCVEXE); fi
 	if [ -f "$(NVDLA_MODULE)" ]; then rm $(NVDLA_MODULE); fi
 	if [ -d "$(NVDLA_RUNTIME)" ]; then rm -rf $(NVDLA_RUNTIME); fi
+	if [ -d "output" ]; then rm -r output; fi
 
 
 ## END HPVM MAKEFILE
