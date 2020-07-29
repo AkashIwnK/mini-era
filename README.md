@@ -35,14 +35,15 @@ To build the HPVM version of Mini-ERA:
 
 1. Set up the path to HPVM: `export HPVM_DIR=$(PATH_TO_HPVM_REPO)/hpvm` (*This can also be added to bashrc*)
 2. Set up path to AppoxHPVM: `export APPROXHPVM_DIR=$(PATH_TO_APPROXHPVM_REPO)/`
-3. Set up path to MINI-ERA: `export MINIERA_DIR=$(PATH_TO_MINIERA_REPO)/`
-4. Set up necessary paths by sourcing the setup script using `source ./set_paths.sh`
+3. Set up path to RISCV Toolchain: `export RISCV_BIN_DIR=$(PATH_TO_RISCV_TOOLCHAIN_BINARIES)/`
+4. Set up path to MINI-ERA: `export MINIERA_DIR=$(PATH_TO_MINIERA_REPO)/`
+5. Set up necessary paths by sourcing the setup script using `source ./set_paths.sh`
     - *Note: The scripts assumes the two environment variables are set and updates the PATH environment variable to point to the HPVM binaries.*
-5. Build for desired target:
+6. Build for desired target:
     * For native architecture: `make`
     * For epochs0 (risc-v host with fft, viterbi and NVLDA accelerators): `make epochs`
     * For all-software risc-v version: `make riscv`
-6. To clean the build: `make clean`
+7. To clean the build: `make clean`
 
 ### Usage
 ```
