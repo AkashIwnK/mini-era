@@ -8,6 +8,10 @@ ifeq ($(HPVM_DIR),)
     $(error HPVM_DIR must be set!)
 endif
 
+ifeq ($(RISCV_BIN_DIR),)
+    $(error RISCV_BIN_DIR must be set!)
+endif
+
 ifeq ($(TARGET),)
         TARGET = seq
 endif
@@ -87,8 +91,10 @@ endif
 YEL='\033[0;33m'
 NC='\033[0m'
 
-
+ifdef MINIERA_DIR
 #------------------------------------------------------------------------------------------
+CFLAGS += -DENABLE_NVDLA
+
 ROOT := $(CUR_DIR)/sw/umd
 
 NVDLA_RUNTIME_DIR = $(CUR_DIR)/sw/umd/
@@ -115,6 +121,7 @@ NVDLA_FLAGS := -pthread -L$(ROOT)/external/ -ljpeg -L$(ROOT)/out/core/src/runtim
 
 include esp_hardware/nvdla/rules.mk
 #-----------------------------------------------------------------------------------------------
+endif
 
 # Targets
 default: $(FAILSAFE) $(BUILD_DIR) $(EXE)
@@ -140,7 +147,7 @@ $(EPOCHSEXE) : $(EPOCHS_LINKED) $(ALLMODULE_OBJS)
 	@echo -e -n ${YEL}Cross-compiling for RISCV: ${NC}
 	@echo -e ${YEL}1\) Use Clang to generate object file${NC}
 	$(CXX) --target=riscv64 -march=rv64g -mabi=lp64d $< -c -o test.o
-	riscv64-unknown-linux-gnu-ld -r $(ALLMODULE_OBJS) test.o -o epochs_test.o
+	$(RISCV_BIN_DIR)/riscv64-unknown-linux-gnu-ld -r $(ALLMODULE_OBJS) test.o -o epochs_test.o
 	@echo -e ${YEL}Cross-compiling for RISCV: 2\) Use GCC cross-compiler to link the binary \(linking with ESP libraries required\)${NC}
 	$(RISCV_BIN_DIR)/riscv64-unknown-linux-gnu-g++ epochs_test.o -o $@ -LESP/lib -lm -lrt -lpthread -lesp -ltest -lcontig -mabi=lp64d -march=rv64g	$(NVDLA_FLAGS)
 	rm test.o epochs_test.o

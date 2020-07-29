@@ -26,7 +26,7 @@
 
 ROOT := $(TOP)
 
-TOOLCHAIN_PREFIX ?= riscv64-unknown-linux-gnu-
+TOOLCHAIN_PREFIX ?= $(RISCV_BIN_DIR)/riscv64-unknown-linux-gnu-
 
 ifeq ($(TOOLCHAIN_PREFIX),)
 $(error Toolchain prefix missing)
