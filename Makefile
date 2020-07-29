@@ -5,19 +5,33 @@
 # which can be copied from Makefile.config.example for a start.
 
 ifeq ($(HPVM_DIR),)
-    $(error HPVM_DIR must be set!)
+    $(error HPVM_DIR is undefined! setup_paths.sh needs to be sourced before running make!)
 endif
+
+CC = $(LLVM_BUILD_DIR)/bin/clang
+#PLATFORM_CFLAGS = -I$(OPENCL_PATH)/include/CL/ -I$(HPVM_BENCH_DIR)/include
+PLATFORM_CFLAGS = -I$(HPVM_BENCH_DIR)/include
+
+CXX = $(LLVM_BUILD_DIR)/bin/clang++
+#PLATFORM_CXXFLAGS = -I$(OPENCL_PATH)/include/CL/ -I$(HPVM_BENCH_DIR)/include
+PLATFORM_CXXFLAGS = -I$(HPVM_BENCH_DIR)/include
+
+LINKER = $(LLVM_BUILD_DIR)/bin/clang++
+#PLATFORM_LDFLAGS = -lm -lpthread -lrt -lOpenCL -L$(OPENCL_LIB_PATH)
+PLATFORM_LDFLAGS = -lm -lpthread -lrt -lOpenCL
+
+LLVM_LIB_PATH = $(LLVM_BUILD_DIR)/lib
+LLVM_BIN_PATH = $(LLVM_BUILD_DIR)/bin
+
+OPT = $(LLVM_BIN_PATH)/opt
+LLVM_LINK = $(LLVM_BIN_PATH)/llvm-link
+LLVM_AS = $(LLVM_BIN_PATH)/llvm-as
+LIT = $(LLVM_BIN_PATH)/llvm-lit
+OCLBE = $(LLVM_BIN_PATH)/llvm-cbe
 
 ifeq ($(TARGET),)
         TARGET = seq
 endif
-
-CONFIG_FILE := $(HPVM_DIR)/test/benchmarks/include/Makefile.config
-
-ifeq ($(wildcard $(CONFIG_FILE)),)
-    $(error $(CONFIG_FILE) not found. See $(CONFIG_FILE).example)
-endif
-include $(CONFIG_FILE)
 
 CUR_DIR = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
@@ -78,15 +92,15 @@ NVDLA_DIR = $(APPROXHPVM_DIR)/llvm/test/VISC/DNN_Benchmarks/benchmarks/miniera-h
 
 LINKER=ld
 
-ifeq ($(OPENCL_PATH),)
-FAILSAFE=no_opencl
-else 
-FAILSAFE=
-endif
-
 YEL='\033[0;33m'
 NC='\033[0m'
 
+# Targets
+.PHONY: default riscv epochs clean
+default: $(BUILD_DIR) $(EXE)
+riscv: $(BUILD_DIR) $(RISCVEXE)
+#epochs: $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE)
+epochs: check-env $(NVDLA_MODULE) $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE) 
 #------------------------------------------------------------------------------------------
 epochs: CFLAGS += -DENABLE_NVDLA
 
@@ -117,21 +131,15 @@ NVDLA_FLAGS := -pthread -L$(ROOT)/external/ -ljpeg -L$(ROOT)/out/core/src/runtim
 include esp_hardware/nvdla/rules.mk
 #-----------------------------------------------------------------------------------------------
 
-# Targets
-default: $(FAILSAFE) $(BUILD_DIR) $(EXE)
-riscv: $(FAILSAFE) $(BUILD_DIR) $(RISCVEXE)
-#epochs: $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE)
-epochs: check-env $(NVDLA_MODULE) $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE) 
-
 check-env:
 ifndef APPROXHPVM_DIR
-	$(error APPROXHPVM_DIR is undefined)
+	$(error APPROXHPVM_DIR is undefined! setup_paths.sh needs to be sourced before running make!)
 endif
 ifndef MINIERA_DIR
-	$(error MINIERA_DIR is undefined)
+	$(error MINIERA_DIR is undefined! setup_paths.sh needs to be sourced before running make!)
 endif
 ifndef RISCV_BIN_DIR
-	$(error RISCV_BIN_DIR is undefined)
+	$(error RISCV_BIN_DIR is undefined! setup_paths.sh needs to be sourced before running make!)
 endif
 
 $(NVDLA_MODULE):
