@@ -12,11 +12,7 @@ ifeq ($(TARGET),)
 	TARGET = seq
 endif
 
-ifeq ($(TARGET),epochs)
-ifeq ($(APPROXHPVM_DIR),)
-    $(error APPROXHPVM_DIR must be set!)
-endif
-endif
+
 
 CONFIG_FILE := $(HPVM_DIR)/test/benchmarks/include/Makefile.config
 
@@ -49,7 +45,7 @@ LFLAGS += -pthread
 SRCDIR_OBJS=read_trace.ll
 OBJS_SRC=$(wildcard $(SRC_DIR)/*.c)
 HPVM_OBJS=main.hpvm.ll
-APP = $(EXE)
+APP = miniera-hpvm-$(TARGET)
 APP_CFLAGS= -ffast-math $(INCLUDES)
 APP_LDFLAGS=$(LFLAGS)
 
@@ -96,7 +92,12 @@ NC='\033[0m'
 default: $(FAILSAFE) $(BUILD_DIR) $(EXE)
 riscv: $(FAILSAFE) $(BUILD_DIR) $(RISCVEXE)
 #epochs: $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE)
-epochs: $(NVDLA_MODULE) $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE) 
+epochs: check-env $(NVDLA_MODULE) $(FAILSAFE) $(BUILD_DIR) $(EPOCHSEXE) 
+
+check-env:
+ifndef APPROXHPVM_DIR
+	$(error APPROXHPVM_DIR is undefined)
+endif
 
 $(NVDLA_MODULE):
 	@echo -e ${YEL}Compiling HPVM Module for NVDLA${NC}
