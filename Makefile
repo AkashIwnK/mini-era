@@ -9,10 +9,14 @@ ifeq ($(HPVM_DIR),)
 endif
 
 ifeq ($(TARGET),)
-	TARGET = seq
+        TARGET = seq
 endif
 
 
+
+ifeq ($(MINIERA_DIR),)
+    $(error MINIERA_DIR must be set!)
+endif
 
 CONFIG_FILE := $(HPVM_DIR)/test/benchmarks/include/Makefile.config
 
@@ -27,19 +31,18 @@ CUR_DIR = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
 LFLAGS += -lm -lrt
 
-
 # Build dirs
 SRC_DIR = src/
+ESP_NVDLA_DIR = esp_hardware/nvdla
 BUILD_DIR = build/$(TARGET)
 
-INCLUDES +=  -I$(SRC_DIR) 
+INCLUDES +=  -I$(SRC_DIR) -I$(ESP_NVDLA_DIR) -I$(TOP)/core/include
 
 EXE = miniera-hpvm-seq
 RISCVEXE = miniera-hpvm-riscv
 EPOCHSEXE = miniera-hpvm-epochs
 
 LFLAGS += -pthread
-
 
 ## BEGIN HPVM MAKEFILE
 SRCDIR_OBJS=read_trace.ll
@@ -79,6 +82,8 @@ EPOCHS_LINKED = $(BUILD_DIR)/$(APP).linked.epochs.ll
 NVDLA_MODULE = hpvm-mod.nvdla
 NVDLA_DIR = $(APPROXHPVM_DIR)/llvm/test/VISC/DNN_Benchmarks/benchmarks/miniera-hpvm
 
+LINKER=ld
+
 ifeq ($(OPENCL_PATH),)
 FAILSAFE=no_opencl
 else 
@@ -87,6 +92,35 @@ endif
 
 YEL='\033[0;33m'
 NC='\033[0m'
+
+
+#------------------------------------------------------------------------------------------
+ROOT := $(CUR_DIR)/sw/umd
+
+NVDLA_RUNTIME_DIR = $(CUR_DIR)/sw/umd/
+NVDLA_RUNTIME = $(CUR_DIR)/sw/umd/out
+
+TOOLCHAIN_PREFIX ?= riscv64-unknown-linux-gnu-
+
+ifeq ($(TOOLCHAIN_PREFIX),)
+$(error Toolchain prefix missing)
+endif
+
+MODULE := nvdla_runtime
+
+include $(ROOT)/make/macros.mk
+
+BUILDOUT ?= $(ROOT)/out/apps/runtime
+BUILDDIR := $(BUILDOUT)/$(MODULE)
+TEST_BIN := $(BUILDDIR)/$(MODULE)
+
+MODULE_COMPILEFLAGS := -W -Wall -Wno-multichar -Wno-unused-parameter -Wno-unused-function -Werror-implicit-function-declaration
+MODULE_CFLAGS := --std=c99
+MODULE_CPPFLAGS := --std=c++11 -fexceptions -fno-rtti
+NVDLA_FLAGS := -pthread -L$(ROOT)/external/ -ljpeg -L$(ROOT)/out/core/src/runtime/libnvdla_runtime -lnvdla_runtime  -Wl,-rpath=.
+
+include esp_hardware/nvdla/rules.mk
+#-----------------------------------------------------------------------------------------------
 
 # Targets
 default: $(FAILSAFE) $(BUILD_DIR) $(EXE)
@@ -100,16 +134,19 @@ ifndef APPROXHPVM_DIR
 endif
 
 $(NVDLA_MODULE):
+	@echo -e ${YEL}Compiling NVDLA Runtime Library${NC}
+	@cd $(NVDLA_RUNTIME_DIR) && make runtime
 	@echo -e ${YEL}Compiling HPVM Module for NVDLA${NC}
 	@cd $(APPROXHPVM_DIR)/llvm/test/VISC/DNN_Benchmarks/benchmarks/miniera-hpvm && make && cp $(NVDLA_MODULE) $(CUR_DIR)
 
-$(EPOCHSEXE) : $(EPOCHS_LINKED)
+$(EPOCHSEXE) : $(EPOCHS_LINKED) $(ALLMODULE_OBJS)
 	@echo -e -n ${YEL}Cross-compiling for RISCV: ${NC}
 	@echo -e ${YEL}1\) Use Clang to generate object file${NC}
 	$(CXX) --target=riscv64 -march=rv64g -mabi=lp64d $< -c -o test.o
+	riscv64-unknown-linux-gnu-ld -r $(ALLMODULE_OBJS) test.o -o epochs_test.o
 	@echo -e ${YEL}Cross-compiling for RISCV: 2\) Use GCC cross-compiler to link the binary \(linking with ESP libraries required\)${NC}
-	$(RISCV_BIN_DIR)/riscv64-unknown-linux-gnu-g++ test.o -o $@ -LESP/lib -lm -lrt -lpthread -lesp -ltest -lcontig -mabi=lp64d -march=rv64g	
-	rm test.o
+	$(RISCV_BIN_DIR)/riscv64-unknown-linux-gnu-g++ epochs_test.o -o $@ -LESP/lib -lm -lrt -lpthread -lesp -ltest -lcontig -mabi=lp64d -march=rv64g	$(NVDLA_FLAGS)
+	rm test.o epochs_test.o
 
 $(EPOCHS_LINKED) : $(EPOCHS_HOST) $(OBJS) $(HPVM_RT_LIB)
 	@echo -e ${YEL}Compile hook function for accelerator: fft${NC}
@@ -170,4 +207,7 @@ clean:
 	if [ -f "$(EPOCHSEXE)" ]; then rm $(EPOCHSEXE); fi
 	if [ -f "$(RISCVEXE)" ]; then rm $(RISCVEXE); fi
 	if [ -f "$(NVDLA_MODULE)" ]; then rm $(NVDLA_MODULE); fi
+	if [ -d "$(NVDLA_RUNTIME)" ]; then rm -rf $(NVDLA_RUNTIME); fi
+
+
 ## END HPVM MAKEFILE

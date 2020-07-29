@@ -39,6 +39,12 @@
 
 #include "calc_fmcw_dist.h"
 #include "hpvm.h"
+
+//#include "miniera_nvdla.h"
+
+extern void initNVDLA();
+extern void runImageonNVDLAWrapper(char *Image);
+
 #define BYPASS_KERAS_CV_CODE  // INITIAL  BRING-UP
 
 #define TIME
@@ -361,7 +367,11 @@ status_t init_cv_kernel(char* dict_fn)
     Py_XDECREF(pFunc_load);
   }
   DEBUG(printf("CV Kernel Init done\n"));
-#endif  
+#endif 
+  
+  // Initialize NVDLA 
+  initNVDLA();
+
   return success;
 }
 
@@ -490,8 +500,9 @@ void execute_cv_kernel(/* 0 */ label_t* in_tr_val, size_t in_tr_val_size, /* 1 *
   __hpvm__attributes(2, in_tr_val, out_label, 1, out_label);
 	
 //	printf("   NVDLA: ");
-  system("echo -n \"  > NVDLA: \"; ./nvdla_runtime --loadable hpvm-mod.nvdla --image 2004_2.jpg --rawdump | grep execution");        
-	printf("\n");
+    runImageonNVDLAWrapper("0003_0.jpg");//"class_busimage_5489.jpg");
+  //system("echo -n \"  > NVDLA: \"; ./nvdla_runtime --loadable hpvm-mod.nvdla --image 2004_2.jpg --rawdump | grep execution");        
+//	printf("\n");
   label_t pred_label = parse_output_dimg();
   *out_label = *in_tr_val;
 
