@@ -8,10 +8,6 @@ ifeq ($(HPVM_DIR),)
     $(error HPVM_DIR must be set!)
 endif
 
-ifeq ($(RISCV_BIN_DIR),)
-    $(error RISCV_BIN_DIR must be set!)
-endif
-
 ifeq ($(TARGET),)
         TARGET = seq
 endif
@@ -91,9 +87,8 @@ endif
 YEL='\033[0;33m'
 NC='\033[0m'
 
-ifdef MINIERA_DIR
 #------------------------------------------------------------------------------------------
-CFLAGS += -DENABLE_NVDLA
+epochs: CFLAGS += -DENABLE_NVDLA
 
 ROOT := $(CUR_DIR)/sw/umd
 
@@ -121,7 +116,6 @@ NVDLA_FLAGS := -pthread -L$(ROOT)/external/ -ljpeg -L$(ROOT)/out/core/src/runtim
 
 include esp_hardware/nvdla/rules.mk
 #-----------------------------------------------------------------------------------------------
-endif
 
 # Targets
 default: $(FAILSAFE) $(BUILD_DIR) $(EXE)
@@ -135,6 +129,9 @@ ifndef APPROXHPVM_DIR
 endif
 ifndef MINIERA_DIR
 	$(error MINIERA_DIR is undefined)
+endif
+ifndef RISCV_BIN_DIR
+	$(error RISCV_BIN_DIR is undefined)
 endif
 
 $(NVDLA_MODULE):
