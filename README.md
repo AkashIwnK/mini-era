@@ -8,13 +8,10 @@ Mini-ERA-HPVM Requirements:
 
 - HPVM (internal repository branch `hpvm-epochs0` located [here](https://gitlab.engr.illinois.edu/llvm/hpvm/-/tree/hpvm-epochs0))
     * Refer to [HPVM README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/hpvm-epochs0/README.md) for set up instructions.
-    *Note: During installation, make sure target is set to X86;RISCV*
-    * After installation, create the `Makefile.config` file under `/hpvm/test/becnhmarks/include` by copying `Makefile.config.example` and
-    modifying it to set all the correct paths accordingly as described [in this README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/hpvm-epochs0/hpvm/test/benchmarks/README.md). *Make sure the path for `RISCV_BIN_DIR` is set to point to the cross-compiler tool
-    chain (see GCC cross compiler below).*
+    *Note: During installation, make sure target is set to X86;RISCV to be able to target the EPOCHS-0 RISC-V processor.*
 - ApproxHPVM (internal repository branch `approx_hpvm_nvdla` located [here](https://gitlab.engr.illinois.edu/llvm/hpvm/-/tree/approx_hpvm_nvdla).
     * Refer to [ApproxHPVM README](https://gitlab.engr.illinois.edu/llvm/hpvm/-/blob/approx_hpvm_nvdla/README.md) for set up instructions.
-- GCC cross compiler for riscv, can be installed using ESP as follows:
+- GCC cross compiler for RISC-V, can be installed using ESP as follows:
     * Clone ESP repository using: `git clone --recursive https://github.com/sld-columbia/esp.git`
     * Checkout the epochs branch: `cd esp && git checkout epochs`
     * Invoke the cross-compiler installation script: `./utils/scripts/build_riscv_toolchain.sh`
@@ -22,28 +19,34 @@ Mini-ERA-HPVM Requirements:
 *Note: A pre-built version of the ESP libraries is provided in this repository.*
 
 ## Installation and Execution
+
+### Checkout Mini-ERA repository
 ```
 git clone https://github.com/IBM/mini-era.git
 cd mini-era
 git checkout hpvm
 ```
 
+### Setup required paths
+In order to successfully build Mini-ERA, certain paths needs to set in the `setup_paths.sh` script.
+To do that, modify `setup_paths.sh` to include the correct paths for the following variabls:
+* `HPVM_DIR` should point to the HPVM repo: `$(PATH_TO_HPVM_REPO)/hpvm`
+* `APPROXHPVM_DIR` should point to the ApproxHPVM repo: `$(PATH_TO_APPROXHPVM_REPO)`
+* `RISCV_BIN_DIR` should point to the bin folder for the cross-compiler: `$(PATH_TO_RISCV_TOOLCHAIN_BINARIES)`
 
 ### Build
 
 To build the HPVM version of Mini-ERA: 
 
-1. Set up the path to HPVM: `export HPVM_DIR=$(PATH_TO_HPVM_REPO)/hpvm` (*This can also be added to bashrc*)
-2. Set up path to AppoxHPVM: `export APPROXHPVM_DIR=$(PATH_TO_APPROXHPVM_REPO)/`
-3. Set up path to RISCV Toolchain: `export RISCV_BIN_DIR=$(PATH_TO_RISCV_TOOLCHAIN_BINARIES)/`
-4. Set up path to MINI-ERA: `export MINIERA_DIR=$(PATH_TO_MINIERA_REPO)/`
-5. Set up necessary paths by sourcing the setup script using `source ./set_paths.sh`
-    - *Note: The scripts assumes the two environment variables are set and updates the PATH environment variable to point to the HPVM binaries.*
+1.After modifying the setup script as described above, source it using `source ./set_paths.sh`
+    - *Note: The scripts must be sourced using `source` because it sets up environment variables that will be needed by the Makefiles.*
 6. Build for desired target:
     * For native architecture: `make`
     * For epochs0 (risc-v host with fft, viterbi and NVLDA accelerators): `make epochs`
     * For all-software risc-v version: `make riscv`
 7. To clean the build: `make clean`
+
+*Note: the build must be cleaned before invoking make with a different target!
 
 ### Usage
 ```
