@@ -41,9 +41,11 @@ To build the HPVM version of Mini-ERA:
 1.After modifying the setup script as described above, source it using `source ./set_paths.sh`
     - *Note: The scripts must be sourced using `source` because it sets up environment variables that will be needed by the Makefiles.*
 6. Build for desired target:
-    * For native architecture: `make`
-    * For epochs0 (risc-v host with fft, viterbi and NVLDA accelerators): `make epochs`
-    * For all-software risc-v version: `make riscv`
+    * For native architecture: `make` will generate the binary `miniera-hpvm-seq`
+    * For epochs0 (risc-v host with fft, viterbi and NVLDA accelerators): `make epochs` will generate the binary `miniera-hpvm-epochs`
+    * For all-software risc-v version: `make riscv` will generate the binary `miniera-hpvm-riscv`
+*Note that when building `riscv` and `epochs` target, an `ld` error will appearing saying that the eh_table_hdr will not be created.
+This error can be ignored, the binary is still being generated.
 7. To clean the build: `make clean`
 
 *Note: the build must be cleaned before invoking make with a different target!
